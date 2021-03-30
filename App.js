@@ -1,11 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import axios from 'axios';
 
 export default function App() {
+  const [mounts, setMounts] = useState('');
+
+  const fetchRepositories = () => {
+    axios
+      .get(`http://10.0.0.194:5000/api/mounts`)
+      .then(response => {
+        setMounts(response.data);
+      })
+      .catch(err => {
+        console.error('Error: cannot retrieve mounts from database')
+      })
+  };
+
+  useEffect(() => {
+    fetchRepositories();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
+      <Text>{mounts}</Text>
       <StatusBar style="auto" />
     </View>
   );
