@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable } from 'react-native';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image } from 'react-native';
 import axios from 'axios';
 import _ from 'lodash';
 
@@ -28,7 +28,7 @@ export default function App() {
     axios
       .get(`http://10.0.0.194:5000/api/single?name=${name}`)
       .then(response => {
-        console.log('response', response.data);
+        // console.log('mountinfo', response.data)
         setMountInfo(response.data);
       })
       .catch(err => {
@@ -61,12 +61,17 @@ export default function App() {
     setSectionedMounts(results);
   }
 
-  const handleModalOpen = () => {
-    setShowModal(true);
+  const handleModalOpen = async () => {
+    await setShowModal(true);
   }
 
   const handleModalClose = () => {
     setShowModal(false);
+  }
+
+  const onTextPress = async (e, text) => {
+    await fetchSingleMount(text);
+    await handleModalOpen();
   }
 
   useEffect(() => {
@@ -76,19 +81,6 @@ export default function App() {
   useEffect(() => {
     sectionMounts();
   }, [mounts]);
-
-
-
-  // useEffect(() => {
-  //   console.log('client mountInfo', mountInfo)
-  // }, [mountInfo]);
-
-
-
-  const onTextPress = (e, text) => {
-    fetchSingleMount(text);
-    handleModalOpen();
-  }
 
   return (
     <View style={ styles.container }>
@@ -114,7 +106,12 @@ export default function App() {
         onRequestClose={ handleModalClose } >
         <View style={ styles.centeredView } >
           <View style={ styles.modalView } >
-            <Text style={ styles.modalText }>Hello wo!</Text>
+            <Text style={ styles.modalText }>Name: { mountInfo.name }</Text>
+            <Text style={ styles.modalText }>Description: { mountInfo.description }</Text>
+            <Text style={ styles.modalText }>Source: { mountInfo.source }</Text>
+            { mountInfo.faction !== null ? <Text style={ styles.modalText }>Faction: { mountInfo.faction }</Text> : null }
+            { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined' ? <Text style={ styles.modalText }>Requirements: { mountInfo['requirements']['faction']['name'] } Faction</Text> : null }
+            <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
             <Pressable
               style={ [styles.button, styles.buttonClose] }
               onPress={ handleModalClose } >
@@ -175,7 +172,7 @@ const styles = StyleSheet.create({
   },
   modalText: {
     marginBottom: 15,
-    textAlign: "center"
+    // textAlign: "left"
   },
   button: {
     borderRadius: 20,
@@ -190,4 +187,8 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center"
   },
+  image: {
+    height: 200,
+    width: 200
+  }
 });
