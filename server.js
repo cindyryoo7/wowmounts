@@ -14,18 +14,18 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.get('/api', (req, res) => {
+app.get('/build', (req, res) => {
   mountsCollection.drop();
   let userToken = apiMaster.getToken();
   userToken
     .catch(err => {
-      console.error('Error: cannot retrieve Access Token')
+      console.error('Error: cannot retrieve Access Token', err);
     })
     .then(result => {
       let mounts = apiMaster.getMounts(result);
       mounts
         .catch(err => {
-          console.error('Error: cannot retrieve mounts from Blizzard API')
+          console.error('Error: cannot retrieve mounts from Blizzard API', err);
         })
         .then(response => {
           let operations = [];
@@ -34,30 +34,30 @@ app.get('/api', (req, res) => {
               'id': obj['id'],
               'name': obj['name'],
               'link': obj['key']['href']
-            }}
+            }};
             operations.push(mount);
           })
           mountsCollection.bulkWrite(operations, { ordered: false });
         })
     })
     .then(result => {
-      res.status(200).send('Mounts imported into MongoDB successfully.')
+      res.status(200).send('Mounts imported into MongoDB successfully.');
     })
 })
 
 app.get('/api/mounts', (req, res) => {
   let mounts = mountsCollection.find().toArray((err, data) => {
     if (err) {
-      console.log('error')
+      console.error('Error: cannot retrieve mounts from MongoDB', err);
     } else {
-      res.status(200).send(data)
+      res.status(200).send(data);
     }
   })
 })
 
 MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => {
   if (err) {
-    return console.log('Error: unable to connect to MongoDB');
+    return console.log('Error: unable to connect to MongoDB', err);
   }
   console.log(`Connected MongoDB: ${url}`);
   console.log(`Database: ${dbName}`);
@@ -65,6 +65,5 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (e
   mountsCollection = db.collection('mounts');
   app.listen(port, () => {
     console.log(`Server listening on ${port}`);
-
   });
 });
