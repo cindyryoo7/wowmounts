@@ -14,6 +14,17 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+app.get('/token', (req, res) => {
+  let userToken = apiMaster.getToken();
+  userToken
+    .catch(err => {
+      console.error('Error: cannot retrieve Access Token', err);
+    })
+    .then(result => {
+      res.send(result);
+    })
+})
+
 app.get('/build', (req, res) => {
   mountsCollection.drop();
   let userToken = apiMaster.getToken();

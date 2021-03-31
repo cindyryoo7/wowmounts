@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput, Button } from 'react-native';
 import { AlphabetList } from "react-native-section-alphabet-list";
 import axios from 'axios';
 import _ from 'lodash';
@@ -13,6 +13,9 @@ export default function App() {
   const [inputText, setInputText] = useState('');
   const [filteredMounts, setFilteredMounts] = useState([]);
   const [isFiltered, setIsFiltered] = useState(false);
+  const [myCollection, setMyCollection] = useState([]);
+  const [showList, setShowList] = useState(true);
+  const [showCollection, setShowCollection] = useState(false);
 
   const fetchMounts = () => {
     axios
@@ -39,12 +42,12 @@ export default function App() {
       });
   }
 
-  const sectionMounts = () => {
+  const sectionMounts = (list) => {
     let mountNames = [];
     var storage = {};
     var results = [];
-    for (var i = 0; i < mounts.length; i++) {
-      mountNames.push(mounts[i].name);
+    for (var i = 0; i < list.length; i++) {
+      mountNames.push(list[i].name);
     }
     let uniqueMounts = _.uniq(mountNames);
     for (var i = 0; i < uniqueMounts.length; i++) {
@@ -66,12 +69,20 @@ export default function App() {
     await handleModalOpen();
   }
 
-  const handleSearch = (searchValue) => {
+  const handleSearch = async (searchValue) => {
+    let filtered;
     if (searchValue.length) {
       if (searchValue.length > 2) {
-        let filtered = sectionedMounts.filter(name => (
-          name.value.includes(searchValue)
-        ));
+        if (showList) {
+          filtered = sectionedMounts.filter(name => (
+            name.value.includes(searchValue)
+          ));
+        } else if (showCollection) {
+          await sectionMounts(myCollection);
+          filtered = await sectionedMounts.filter(name => (
+            name.value.includes(searchValue)
+          ));
+        }
         setFilteredMounts(filtered);
         setIsFiltered(true);
       } else {
@@ -84,12 +95,37 @@ export default function App() {
     }
   }
 
+  const handleAddToCollection = (e, info) => {
+    Alert.alert(`${info.name} has been added to your collection!`)
+    let currentCollection = myCollection.slice()
+    currentCollection.push(info);
+    setMyCollection(currentCollection);
+  }
+
+  const handleViewList = () => {
+    setShowList(true);
+    setShowCollection(false);
+    sectionMounts(mounts);
+    setFilteredMounts([]);
+    setInputText('');
+    setIsFiltered(false);
+  }
+
+  const handleViewCollection = () => {
+    setShowList(false);
+    setShowCollection(true);
+    sectionMounts(myCollection);
+    setFilteredMounts([]);
+    setInputText('');
+    setIsFiltered(false);
+  }
+
   useEffect(() => {
     fetchMounts();
   }, []);
 
   useEffect(() => {
-    sectionMounts();
+    sectionMounts(mounts);
   }, [mounts]);
 
   useEffect(()=> {
@@ -99,81 +135,132 @@ export default function App() {
   return (
     <SafeAreaView style={ styles.container }>
       <StatusBar style="auto" />
+      <View style={ styles.navigation }>
+        <Pressable
+          onPress={ handleViewList } >
+          <Text style={ styles.navigationText }>View All Mounts</Text>
+        </Pressable>
+        <Pressable
+          onPress={ handleViewCollection } >
+          <Text style={ styles.navigationText }>View My Collection</Text>
+        </Pressable>
+      </View>
       <TextInput
         style={ styles.input }
         onChangeText={ setInputText }
         value={ inputText }
         placeholder={ ' Search for a mount...'}
       />
-      { isFiltered && filteredMounts.length
-        ? <AlphabetList
-          data={ filteredMounts }
-          indexLetterColor={ 'blue' }
-          keyExtractor={ (item, index) => item + index }
-          renderCustomItem={ ( item ) => (
-            <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
-              <View style={ styles.item }>
-                <Text style={ styles.title }>{ item.value }</Text>
+      { showList && !showCollection
+        ? isFiltered && filteredMounts.length
+          ? <AlphabetList
+            data={ filteredMounts }
+            indexLetterColor={ 'blue' }
+            keyExtractor={ (item, index) => item + index }
+            renderCustomItem={ ( item ) => (
+              <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                <View style={ styles.item }>
+                  <Text style={ styles.title }>{ item.value }</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            renderCustomSectionHeader={ ( section ) => (
+              <Text style={ styles.header }>{ section.title }</Text>
+            )} />
+          : isFiltered && !filteredMounts.length
+              ? <Text style={ styles.errorText }>No mounts with that search criteria can be found.</Text>
+              : <AlphabetList
+                data={ sectionedMounts }
+                indexLetterColor={ 'blue' }
+                keyExtractor={ (item, index) => item + index }
+                renderCustomItem={ ( item ) => (
+                  <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                    <View style={ styles.item }>
+                      <Text style={ styles.title }>{ item.value }</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                renderCustomSectionHeader={ ( section ) => (
+                  <Text style={ styles.header }>{ section.title }</Text>
+                )}
+              />
+        : isFiltered && filteredMounts.length
+          ? <AlphabetList
+            data={ filteredMounts }
+            indexLetterColor={ 'blue' }
+            keyExtractor={ (item, index) => item + index }
+            renderCustomItem={ ( item ) => (
+              <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                <View style={ styles.item }>
+                  <Text style={ styles.title }>{ item.value }</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+            renderCustomSectionHeader={ ( section ) => (
+              <Text style={ styles.header }>{ section.title }</Text>
+            )} />
+          : isFiltered && !filteredMounts.length
+              ? <Text style={ styles.errorText }>No mounts with that search criteria can be found.</Text>
+              : <AlphabetList
+                data={ sectionedMounts }
+                indexLetterColor={ 'blue' }
+                keyExtractor={ (item, index) => item + index }
+                renderCustomItem={ ( item ) => (
+                  <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                    <View style={ styles.item }>
+                      <Text style={ styles.title }>{ item.value }</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+                renderCustomSectionHeader={ ( section ) => (
+                  <Text style={ styles.header }>{ section.title }</Text>
+                )}
+              />
+        }
+        <Modal
+          animationType="slide"
+          transparent={ true }
+          visible={ showModal }
+          onRequestClose={ handleModalClose } >
+          <View style={ styles.centeredView } >
+            <View style={ styles.modalView } >
+              <Text style={ styles.modalTextHeader }>Name:
+                <Text style={ styles.modalText }> { mountInfo.name }</Text>
+              </Text>
+              <Text style={ styles.modalTextHeader }>Description:
+                <Text style={ styles.modalText }> { mountInfo.description }</Text>
+              </Text>
+              <Text style={ styles.modalTextHeader }>Source:
+                <Text style={ styles.modalText }> { mountInfo.source }</Text>
+              </Text>
+              { mountInfo.faction !== null
+                ? <Text style={ styles.modalTextHeader }>Faction:
+                    <Text style={ styles.modalText }> { mountInfo.faction }</Text>
+                  </Text>
+                : null }
+              { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined'
+                ? <Text style={ styles.modalTextHeader }>Requirements:
+                    <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                  </Text>
+                : null }
+              <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
+              <Text></Text>
+              <View style={ styles.fixToText }>
+                <Pressable
+                  style={ [styles.button, styles.buttonClose] }
+                  onPress={ handleModalClose } >
+                  <Text style={ styles.textStyle }>Close</Text>
+                </Pressable>
+                <Text> </Text>
+                <Pressable
+                  style={ styles.button }
+                  onPress={ (e) => handleAddToCollection(e, mountInfo) } >
+                  <Text style={ styles.textStyle }>Add to Collection +</Text>
+                </Pressable>
               </View>
-            </TouchableOpacity>
-          )}
-          renderCustomSectionHeader={ ( section ) => (
-            <Text style={ styles.header }>{ section.title }</Text>
-          )} />
-        : isFiltered && !filteredMounts.length
-            ? <Text style={ styles.errorText }>No mounts with that search criteria can be found.</Text>
-            : <AlphabetList
-              data={ sectionedMounts }
-              indexLetterColor={ 'blue' }
-              keyExtractor={ (item, index) => item + index }
-              renderCustomItem={ ( item ) => (
-                <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
-                  <View style={ styles.item }>
-                    <Text style={ styles.title }>{ item.value }</Text>
-                  </View>
-                </TouchableOpacity>
-              )}
-              renderCustomSectionHeader={ ( section ) => (
-                <Text style={ styles.header }>{ section.title }</Text>
-              )}
-            />
-      }
-      <Modal
-        animationType="slide"
-        transparent={ true }
-        visible={ showModal }
-        onRequestClose={ handleModalClose } >
-        <View style={ styles.centeredView } >
-          <View style={ styles.modalView } >
-            <Text style={ styles.modalTextHeader }>Name:
-              <Text style={ styles.modalText }> { mountInfo.name }</Text>
-            </Text>
-            <Text style={ styles.modalTextHeader }>Description:
-              <Text style={ styles.modalText }> { mountInfo.description }</Text>
-            </Text>
-            <Text style={ styles.modalTextHeader }>Source:
-              <Text style={ styles.modalText }> { mountInfo.source }</Text>
-            </Text>
-            { mountInfo.faction !== null
-              ? <Text style={ styles.modalTextHeader }>Faction:
-                  <Text style={ styles.modalText }> { mountInfo.faction }</Text>
-                </Text>
-              : null }
-            { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined'
-              ? <Text style={ styles.modalTextHeader }>Requirements:
-                  <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
-                </Text>
-              : null }
-            <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
-            <Text></Text>
-            <Pressable
-              style={ [styles.button, styles.buttonClose] }
-              onPress={ handleModalClose } >
-              <Text style={ styles.textStyle }>Close</Text>
-            </Pressable>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
     </SafeAreaView>
   );
 }
@@ -233,10 +320,11 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 20,
     padding: 10,
-    elevation: 2
+    elevation: 2,
+    backgroundColor: "#2196F3",
   },
   buttonClose: {
-    backgroundColor: "#2196F3",
+    backgroundColor: "#dc3545",
   },
   textStyle: {
     color: "white",
@@ -255,5 +343,18 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 20,
     paddingLeft: 15
+  },
+  fixToText: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  navigation: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  navigationText: {
+    color: "blue",
+    textAlign: "center",
+    textDecorationLine: 'underline'
   }
 });
