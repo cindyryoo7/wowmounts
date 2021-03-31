@@ -135,6 +135,9 @@ export default function App() {
   return (
     <SafeAreaView style={ styles.container }>
       <StatusBar style="auto" />
+      <View style={ styles.title }>
+        <Text style={ styles.titleText }>WoW, Mounts!</Text>
+      </View>
       <View style={ styles.navigation }>
         <Pressable
           onPress={ handleViewList } >
@@ -160,7 +163,7 @@ export default function App() {
             renderCustomItem={ ( item ) => (
               <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
                 <View style={ styles.item }>
-                  <Text style={ styles.title }>{ item.value }</Text>
+                  <Text style={ styles.listText }>{ item.value }</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -176,7 +179,7 @@ export default function App() {
                 renderCustomItem={ ( item ) => (
                   <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
                     <View style={ styles.item }>
-                      <Text style={ styles.title }>{ item.value }</Text>
+                      <Text style={ styles.listText }>{ item.value }</Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -192,7 +195,7 @@ export default function App() {
             renderCustomItem={ ( item ) => (
               <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
                 <View style={ styles.item }>
-                  <Text style={ styles.title }>{ item.value }</Text>
+                  <Text style={ styles.listText }>{ item.value }</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -208,7 +211,7 @@ export default function App() {
                 renderCustomItem={ ( item ) => (
                   <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
                     <View style={ styles.item }>
-                      <Text style={ styles.title }>{ item.value }</Text>
+                      <Text style={ styles.listText }>{ item.value }</Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -285,7 +288,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     height: 50
   },
-  title: {
+  listText: {
     fontSize: 24
   },
   centeredView: {
@@ -356,5 +359,14 @@ const styles = StyleSheet.create({
     color: "blue",
     textAlign: "center",
     textDecorationLine: 'underline'
+  },
+  title: {
+    alignItems: 'center',
+    paddingBottom: 10
+  },
+  titleText: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    fontWeight: "bold",
   }
 });
