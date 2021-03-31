@@ -106,16 +106,31 @@ export default function App() {
         onRequestClose={ handleModalClose } >
         <View style={ styles.centeredView } >
           <View style={ styles.modalView } >
-            <Text style={ styles.modalText }>Name: { mountInfo.name }</Text>
-            <Text style={ styles.modalText }>Description: { mountInfo.description }</Text>
-            <Text style={ styles.modalText }>Source: { mountInfo.source }</Text>
-            { mountInfo.faction !== null ? <Text style={ styles.modalText }>Faction: { mountInfo.faction }</Text> : null }
-            { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined' ? <Text style={ styles.modalText }>Requirements: { mountInfo['requirements']['faction']['name'] } Faction</Text> : null }
+            <Text style={ styles.modalTextHeader }>Name:
+              <Text style={ styles.modalText }> { mountInfo.name }</Text>
+            </Text>
+            <Text style={ styles.modalTextHeader }>Description:
+              <Text style={ styles.modalText }> { mountInfo.description }</Text>
+            </Text>
+            <Text style={ styles.modalTextHeader }>Source:
+              <Text style={ styles.modalText }> { mountInfo.source }</Text>
+            </Text>
+            { mountInfo.faction !== null
+              ? <Text style={ styles.modalTextHeader }>Faction:
+                  <Text style={ styles.modalText }> { mountInfo.faction }</Text>
+                </Text>
+              : null }
+            { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined'
+              ? <Text style={ styles.modalTextHeader }>Requirements:
+                  <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                </Text>
+              : null }
             <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
+            <Text></Text>
             <Pressable
               style={ [styles.button, styles.buttonClose] }
               onPress={ handleModalClose } >
-              <Text style={ styles.textStyle }>Hide Modal</Text>
+              <Text style={ styles.textStyle }>Close</Text>
             </Pressable>
           </View>
         </View>
@@ -170,9 +185,13 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5
   },
+  modalTextHeader: {
+    marginBottom: 15,
+    fontWeight: "bold",
+  },
   modalText: {
     marginBottom: 15,
-    // textAlign: "left"
+    fontWeight: "normal",
   },
   button: {
     borderRadius: 20,
