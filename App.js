@@ -8,6 +8,7 @@ export default function App() {
   const [mounts, setMounts] = useState([]);
   const [sectionedMounts, setSectionedMounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [mountInfo, setMountInfo] = useState('');
 
   const fetchMounts = () => {
     axios
@@ -20,8 +21,20 @@ export default function App() {
       })
       .catch(err => {
         console.log('Error: cannot retrieve mounts from server', err);
-      })
+      });
   };
+
+  const fetchSingleMount = (name) => {
+    axios
+      .get(`http://10.0.0.194:5000/api/single?name=${name}`)
+      .then(response => {
+        console.log('response', response.data);
+        setMountInfo(response.data);
+      })
+      .catch(err => {
+        console.log('Error: cannot retrieve mount info from server', err);
+      });
+  }
 
   const sectionMounts = () => {
     let mountNames = [];
@@ -48,7 +61,7 @@ export default function App() {
     setSectionedMounts(results);
   }
 
-  const handleClick = () => {
+  const handleModalOpen = () => {
     setShowModal(true);
   }
 
@@ -64,31 +77,28 @@ export default function App() {
     sectionMounts();
   }, [mounts]);
 
+
+
+  // useEffect(() => {
+  //   console.log('client mountInfo', mountInfo)
+  // }, [mountInfo]);
+
+
+
+  const onTextPress = (e, text) => {
+    fetchSingleMount(text);
+    handleModalOpen();
+  }
+
   return (
     <View style={ styles.container }>
       <SectionList
         sections={ sectionedMounts }
         keyExtractor={ (item, index) => item + index }
         renderItem={ ({ item }) =>
-          <TouchableOpacity onPress={ handleClick }>
+          <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
             <View style={ styles.item }>
               <Text style={ styles.title }>{ item }</Text>
-              <Modal
-                animationType="slide"
-                transparent={ true }
-                visible={ showModal }
-                onRequestClose={ handleModalClose } >
-                <View style={ styles.centeredView } >
-                  <View style={ styles.modalView } >
-                    <Text style={ styles.modalText }>Hello World!</Text>
-                    <Pressable
-                      style={ [styles.button, styles.buttonClose] }
-                      onPress={ handleModalClose } >
-                      <Text style={ styles.textStyle }>Hide Modal</Text>
-                    </Pressable>
-                  </View>
-                </View>
-                </Modal>
             </View>
           </TouchableOpacity>
         }
@@ -97,6 +107,22 @@ export default function App() {
         )}
       />
       <StatusBar style="auto" />
+      <Modal
+        animationType="slide"
+        transparent={ true }
+        visible={ showModal }
+        onRequestClose={ handleModalClose } >
+        <View style={ styles.centeredView } >
+          <View style={ styles.modalView } >
+            <Text style={ styles.modalText }>Hello wo!</Text>
+            <Pressable
+              style={ [styles.button, styles.buttonClose] }
+              onPress={ handleModalClose } >
+              <Text style={ styles.textStyle }>Hide Modal</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
