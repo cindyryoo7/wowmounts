@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image } from 'react-native';
+import { AlphabetList } from "react-native-section-alphabet-list";
 import axios from 'axios';
 import _ from 'lodash';
 
@@ -28,7 +29,6 @@ export default function App() {
     axios
       .get(`http://10.0.0.194:5000/api/single?name=${name}`)
       .then(response => {
-        // console.log('mountinfo', response.data)
         setMountInfo(response.data);
       })
       .catch(err => {
@@ -45,18 +45,7 @@ export default function App() {
     }
     let uniqueMounts = _.uniq(mountNames);
     for (var i = 0; i < uniqueMounts.length; i++) {
-      if (!storage[uniqueMounts[i][0]]) {
-        storage[uniqueMounts[i][0]] = [uniqueMounts[i]];
-      } else {
-        storage[uniqueMounts[i][0]].push(uniqueMounts[i])
-      }
-    }
-    for (var key in storage) {
-      var newObj = {
-        title: key,
-        data: storage[key]
-      }
-      results.push(newObj);
+      results.push({ value: uniqueMounts[i], key: i })
     }
     setSectionedMounts(results);
   }
@@ -70,7 +59,7 @@ export default function App() {
   }
 
   const onTextPress = async (e, text) => {
-    await fetchSingleMount(text);
+    await fetchSingleMount(text.value);
     await handleModalOpen();
   }
 
@@ -84,21 +73,22 @@ export default function App() {
 
   return (
     <View style={ styles.container }>
-      <SectionList
-        sections={ sectionedMounts }
+      <StatusBar style="auto" />
+      <AlphabetList
+        data={ sectionedMounts }
+        indexLetterColor={ 'blue' }
         keyExtractor={ (item, index) => item + index }
-        renderItem={ ({ item }) =>
+        renderCustomItem={ ( item ) => (
           <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
             <View style={ styles.item }>
-              <Text style={ styles.title }>{ item }</Text>
+              <Text style={ styles.title }>{ item.value }</Text>
             </View>
           </TouchableOpacity>
-        }
-        renderSectionHeader={ ({ section: { title } }) => (
-          <Text style={ styles.header }>{ title }</Text>
+        )}
+        renderCustomSectionHeader={ ( section ) => (
+          <Text style={ styles.header }>{ section.title }</Text>
         )}
       />
-      <StatusBar style="auto" />
       <Modal
         animationType="slide"
         transparent={ true }
@@ -144,7 +134,6 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center'
   },
   header: {
