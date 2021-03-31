@@ -2,6 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable } from 'react-native';
 import axios from 'axios';
+import _ from 'lodash';
 
 export default function App() {
   const [mounts, setMounts] = useState([]);
@@ -22,14 +23,19 @@ export default function App() {
       })
   };
 
-  const sectionMounts = (allMounts) => {
+  const sectionMounts = () => {
+    let mountNames = [];
     var storage = {};
     var results = [];
     for (var i = 0; i < mounts.length; i++) {
-      if (!storage[mounts[i].name[0]]) {
-        storage[mounts[i].name[0]] = [mounts[i].name];
+      mountNames.push(mounts[i].name);
+    }
+    let uniqueMounts = _.uniq(mountNames);
+    for (var i = 0; i < uniqueMounts.length; i++) {
+      if (!storage[uniqueMounts[i][0]]) {
+        storage[uniqueMounts[i][0]] = [uniqueMounts[i]];
       } else {
-        storage[mounts[i].name[0]].push(mounts[i].name)
+        storage[uniqueMounts[i][0]].push(uniqueMounts[i])
       }
     }
     for (var key in storage) {
