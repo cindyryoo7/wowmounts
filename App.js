@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image } from 'react-native';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput } from 'react-native';
 import { AlphabetList } from "react-native-section-alphabet-list";
 import axios from 'axios';
 import _ from 'lodash';
@@ -10,6 +10,9 @@ export default function App() {
   const [sectionedMounts, setSectionedMounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [mountInfo, setMountInfo] = useState('');
+  const [inputText, setInputText] = useState('');
+  const [filteredMounts, setFilteredMounts] = useState([]);
+  const [isFiltered, setIsFiltered] = useState(false);
 
   const fetchMounts = () => {
     axios
@@ -63,6 +66,24 @@ export default function App() {
     await handleModalOpen();
   }
 
+  const handleSearch = (searchValue) => {
+    if (searchValue.length) {
+      if (searchValue.length > 2) {
+        let filtered = sectionedMounts.filter(name => (
+          name.value.includes(searchValue)
+        ));
+        setFilteredMounts(filtered);
+        setIsFiltered(true);
+      } else {
+        setFilteredMounts([]);
+        setIsFiltered(false);
+      }
+    } else {
+      setFilteredMounts([]);
+      setIsFiltered(false);
+    }
+  }
+
   useEffect(() => {
     fetchMounts();
   }, []);
@@ -71,24 +92,52 @@ export default function App() {
     sectionMounts();
   }, [mounts]);
 
+  useEffect(()=> {
+    handleSearch(inputText);
+  },[inputText])
+
   return (
-    <View style={ styles.container }>
+    <SafeAreaView style={ styles.container }>
       <StatusBar style="auto" />
-      <AlphabetList
-        data={ sectionedMounts }
-        indexLetterColor={ 'blue' }
-        keyExtractor={ (item, index) => item + index }
-        renderCustomItem={ ( item ) => (
-          <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
-            <View style={ styles.item }>
-              <Text style={ styles.title }>{ item.value }</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-        renderCustomSectionHeader={ ( section ) => (
-          <Text style={ styles.header }>{ section.title }</Text>
-        )}
+      <TextInput
+        style={ styles.input }
+        onChangeText={ setInputText }
+        value={ inputText }
+        placeholder={ ' Search for a mount...'}
       />
+      { isFiltered && filteredMounts.length
+        ? <AlphabetList
+          data={ filteredMounts }
+          indexLetterColor={ 'blue' }
+          keyExtractor={ (item, index) => item + index }
+          renderCustomItem={ ( item ) => (
+            <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+              <View style={ styles.item }>
+                <Text style={ styles.title }>{ item.value }</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+          renderCustomSectionHeader={ ( section ) => (
+            <Text style={ styles.header }>{ section.title }</Text>
+          )} />
+        : isFiltered && !filteredMounts.length
+            ? <Text style={ styles.errorText }>No mounts with that search criteria can be found.</Text>
+            : <AlphabetList
+              data={ sectionedMounts }
+              indexLetterColor={ 'blue' }
+              keyExtractor={ (item, index) => item + index }
+              renderCustomItem={ ( item ) => (
+                <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                  <View style={ styles.item }>
+                    <Text style={ styles.title }>{ item.value }</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+              renderCustomSectionHeader={ ( section ) => (
+                <Text style={ styles.header }>{ section.title }</Text>
+              )}
+            />
+      }
       <Modal
         animationType="slide"
         transparent={ true }
@@ -125,7 +174,7 @@ export default function App() {
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -134,14 +183,13 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center'
   },
   header: {
     paddingTop: 2,
     paddingLeft: 10,
     paddingRight: 10,
     paddingBottom: 2,
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: 'bold',
     backgroundColor: 'rgba(247,247,247,1.0)'
   },
@@ -198,5 +246,14 @@ const styles = StyleSheet.create({
   image: {
     height: 200,
     width: 200
+  },
+  input: {
+    height: 40,
+    margin: 12,
+    borderWidth: 1,
+  },
+  errorText: {
+    fontSize: 20,
+    paddingLeft: 15
   }
 });
