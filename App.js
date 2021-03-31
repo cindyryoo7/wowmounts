@@ -1,11 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList } from 'react-native';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable } from 'react-native';
 import axios from 'axios';
 
 export default function App() {
   const [mounts, setMounts] = useState([]);
   const [sectionedMounts, setSectionedMounts] = useState([]);
+  const [showModal, setShowModal] = useState(false);
 
   const fetchMounts = () => {
     axios
@@ -41,6 +42,14 @@ export default function App() {
     setSectionedMounts(results);
   }
 
+  const handleClick = () => {
+    setShowModal(true);
+  }
+
+  const handleModalClose = () => {
+    setShowModal(false);
+  }
+
   useEffect(() => {
     fetchMounts();
   }, []);
@@ -55,9 +64,27 @@ export default function App() {
         sections={ sectionedMounts }
         keyExtractor={ (item, index) => item + index }
         renderItem={ ({ item }) =>
-          <View style={ styles.item }>
-            <Text style={ styles.title }>{ item }</Text>
-          </View>
+          <TouchableOpacity onPress={ handleClick }>
+            <View style={ styles.item }>
+              <Text style={ styles.title }>{ item }</Text>
+              <Modal
+                animationType="slide"
+                transparent={ true }
+                visible={ showModal }
+                onRequestClose={ handleModalClose } >
+                <View style={ styles.centeredView } >
+                  <View style={ styles.modalView } >
+                    <Text style={ styles.modalText }>Hello World!</Text>
+                    <Pressable
+                      style={ [styles.button, styles.buttonClose] }
+                      onPress={ handleModalClose } >
+                      <Text style={ styles.textStyle }>Hide Modal</Text>
+                    </Pressable>
+                  </View>
+                </View>
+                </Modal>
+            </View>
+          </TouchableOpacity>
         }
         renderSectionHeader={ ({ section: { title } }) => (
           <Text style={ styles.header }>{ title }</Text>
@@ -92,5 +119,43 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24
-  }
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: "center"
+  },
+  button: {
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2
+  },
+  buttonClose: {
+    backgroundColor: "#2196F3",
+  },
+  textStyle: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center"
+  },
 });
