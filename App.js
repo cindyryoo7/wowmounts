@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput, Button } from 'react-native';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput, Button, FlatList } from 'react-native';
 import { AlphabetList } from "react-native-section-alphabet-list";
 import axios from 'axios';
 import _ from 'lodash';
@@ -16,6 +16,9 @@ export default function App() {
   const [myCollection, setMyCollection] = useState([]);
   const [showList, setShowList] = useState(true);
   const [showCollection, setShowCollection] = useState(false);
+  const [showListView, setShowListView] = useState(true);
+  const [showGalleryView, setShowGalleryView] = useState(false);
+  const [myFilteredCollection, setMyFilteredCollection] = useState([]);
 
   const fetchMounts = () => {
     axios
@@ -64,8 +67,13 @@ export default function App() {
     setShowModal(false);
   }
 
-  const onTextPress = async (e, text) => {
+  const handleTextPress = async (e, text) => {
     await fetchSingleMount(text.value);
+    await handleModalOpen();
+  }
+
+  const handleImagePress = async (e, image) => {
+    await fetchSingleMount(image.name);
     await handleModalOpen();
   }
 
@@ -78,10 +86,17 @@ export default function App() {
             name.value.includes(searchValue)
           ));
         } else if (showCollection) {
-          await sectionMounts(myCollection);
-          filtered = await sectionedMounts.filter(name => (
-            name.value.includes(searchValue)
-          ));
+          if (showGalleryView) {
+            filtered = await myCollection.filter(mount => (
+              mount.name.includes(searchValue)
+            ));
+            setMyFilteredCollection(filtered);
+          } else {
+            await sectionMounts(myCollection);
+            filtered = await sectionedMounts.filter(name => (
+              name.value.includes(searchValue)
+            ));
+          }
         }
         setFilteredMounts(filtered);
         setIsFiltered(true);
@@ -115,6 +130,22 @@ export default function App() {
     setShowList(false);
     setShowCollection(true);
     sectionMounts(myCollection);
+    setFilteredMounts([]);
+    setInputText('');
+    setIsFiltered(false);
+  }
+
+  const handleGalleryView = () => {
+    setShowGalleryView(true);
+    setShowListView(false);
+    setFilteredMounts([]);
+    setInputText('');
+    setIsFiltered(false);
+  }
+
+  const handleListView = () => {
+    setShowListView(true);
+    setShowGalleryView(false);
     setFilteredMounts([]);
     setInputText('');
     setIsFiltered(false);
@@ -161,7 +192,7 @@ export default function App() {
             indexLetterColor={ 'blue' }
             keyExtractor={ (item, index) => item + index }
             renderCustomItem={ ( item ) => (
-              <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+              <TouchableOpacity onPress={(e) => handleTextPress(e, item)}>
                 <View style={ styles.item }>
                   <Text style={ styles.listText }>{ item.value }</Text>
                 </View>
@@ -177,7 +208,7 @@ export default function App() {
                 indexLetterColor={ 'blue' }
                 keyExtractor={ (item, index) => item + index }
                 renderCustomItem={ ( item ) => (
-                  <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
+                  <TouchableOpacity onPress={(e) => handleTextPress(e, item)}>
                     <View style={ styles.item }>
                       <Text style={ styles.listText }>{ item.value }</Text>
                     </View>
@@ -187,38 +218,116 @@ export default function App() {
                   <Text style={ styles.header }>{ section.title }</Text>
                 )}
               />
-        : isFiltered && filteredMounts.length
-          ? <AlphabetList
-            data={ filteredMounts }
-            indexLetterColor={ 'blue' }
-            keyExtractor={ (item, index) => item + index }
-            renderCustomItem={ ( item ) => (
-              <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
-                <View style={ styles.item }>
-                  <Text style={ styles.listText }>{ item.value }</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-            renderCustomSectionHeader={ ( section ) => (
-              <Text style={ styles.header }>{ section.title }</Text>
-            )} />
+        : isFiltered && filteredMounts.length && showCollection
+          ? <View>
+              <View style={ styles.navigation }>
+                {showListView
+                  ? <Pressable
+                    onPress={ handleGalleryView } >
+                    <Text style={ styles.navigationText }>Gallery View</Text>
+                  </Pressable>
+                  : <Pressable
+                    onPress={ handleListView } >
+                    <Text style={ styles.navigationText }>List View</Text>
+                  </Pressable>
+                }
+              </View>
+              { showListView
+                ? <AlphabetList
+                  data={ filteredMounts }
+                  indexLetterColor={ 'blue' }
+                  keyExtractor={ (item, index) => item + index }
+                  renderCustomItem={ ( item ) => (
+                    <TouchableOpacity onPress={(e) => handleTextPress(e, item)}>
+                      <View style={ styles.item }>
+                        <Text style={ styles.listText }>{ item.value }</Text>
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                  renderCustomSectionHeader={ ( section ) => (
+                    <Text style={ styles.header }>{ section.title }</Text>
+                  )} />
+                : isFiltered && myFilteredCollection.length
+                  ? <FlatList
+                    data={ myFilteredCollection }
+                    renderItem={ ( { item } ) => (
+                      <TouchableOpacity style={ styles.gallery } onPress={(e) => handleImagePress(e, item)}>
+                        <Image source={{ uri: item.imageUrl }} style={ styles.galleryImage }></Image>
+                        <Text>{ item.name }</Text>
+                      </TouchableOpacity>
+                    )}
+                    keyExtractor={ (item, index) => item + index }
+                    numColumns={ 2 }
+                  />
+                  : <FlatList
+                    data={ myCollection }
+                    renderItem={ ( { item } ) => (
+                      <TouchableOpacity style={ styles.gallery } onPress={(e) => handleImagePress(e, item)}>
+                        <Image source={{ uri: item.imageUrl }} style={ styles.galleryImage }></Image>
+                        <Text>{ item.name }</Text>
+                      </TouchableOpacity>
+                    )}
+                    keyExtractor={ (item, index) => item + index }
+                    numColumns={ 2 }
+                  />
+              }
+            </View>
           : isFiltered && !filteredMounts.length
               ? <Text style={ styles.errorText }>No mounts with that search criteria can be found.</Text>
-              : <AlphabetList
-                data={ sectionedMounts }
-                indexLetterColor={ 'blue' }
-                keyExtractor={ (item, index) => item + index }
-                renderCustomItem={ ( item ) => (
-                  <TouchableOpacity onPress={(e) => onTextPress(e, item)}>
-                    <View style={ styles.item }>
-                      <Text style={ styles.listText }>{ item.value }</Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-                renderCustomSectionHeader={ ( section ) => (
-                  <Text style={ styles.header }>{ section.title }</Text>
-                )}
-              />
+              : <View>
+                  <View style={ styles.navigation }>
+                    {showListView
+                      ? <Pressable
+                        onPress={ handleGalleryView } >
+                        <Text style={ styles.navigationText }>Gallery View</Text>
+                      </Pressable>
+                      : <Pressable
+                      onPress={ handleListView } >
+                      <Text style={ styles.navigationText }>List View</Text>
+                    </Pressable>
+                    }
+                  </View>
+                { showListView
+                  ? <AlphabetList
+                    data={ sectionedMounts }
+                    indexLetterColor={ 'blue' }
+                    keyExtractor={ (item, index) => item + index }
+                    renderCustomItem={ ( item ) => (
+                      <TouchableOpacity onPress={(e) => handleTextPress(e, item)}>
+                        <View style={ styles.item }>
+                          <Text style={ styles.listText }>{ item.value }</Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                    renderCustomSectionHeader={ ( section ) => (
+                      <Text style={ styles.header }>{ section.title }</Text>
+                    )}
+                  />
+                  : isFiltered && myFilteredCollection.length
+                    ? <FlatList
+                      data={ myFilteredCollection }
+                      renderItem={ ( { item } ) => (
+                        <TouchableOpacity style={ styles.gallery } onPress={(e) => handleImagePress(e, item)}>
+                          <Image source={{ uri: item.imageUrl }} style={ styles.galleryImage }></Image>
+                          <Text>{ item.name }</Text>
+                        </TouchableOpacity>
+                      )}
+                      keyExtractor={ (item, index) => item + index }
+                      numColumns={ 2 }
+                    />
+                    : <FlatList
+                      data={ myCollection }
+                      renderItem={ ( { item } ) => (
+                        <TouchableOpacity style={ styles.gallery } onPress={(e) => handleImagePress(e, item)}>
+                          <Image source={{ uri: item.imageUrl }} style={ styles.galleryImage }></Image>
+                          <Text>{ item.name }</Text>
+                        </TouchableOpacity>
+                      )}
+                      keyExtractor={ (item, index) => item + index }
+                      numColumns={ 2 }
+                    />
+                }
+                </View>
         }
         <Modal
           animationType="slide"
@@ -368,5 +477,15 @@ const styles = StyleSheet.create({
     fontSize: 20,
     textDecorationLine: 'underline',
     fontWeight: "bold",
+  },
+  galleryImage: {
+    height: 100,
+    width: 100,
+  },
+  gallery: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    flex: 1,
   }
 });
