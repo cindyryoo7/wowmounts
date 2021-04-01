@@ -4,7 +4,7 @@ const apiMaster = require('./apiMaster.js')
 const cors = require('cors');
 const url = 'mongodb://127.0.0.1:27017';
 const MongoClient = require('mongodb').MongoClient;
-let db, mountsCollection;
+let db, mountsCollection, myMountsCollection;
 const dbName = 'mvp';
 const port = 5000;
 
@@ -109,6 +109,44 @@ app.get('/api/single', async (req, res) => {
   }
 })
 
+app.get('/api/mymounts', (req, res) => {
+  let authCode = req.query.code;
+  let userToken = apiMaster.getUserToken(authCode);
+  userToken
+    .catch(err => {
+      console.error('Error: cannot get user token from Blizzard API', err);
+    })
+    .then(response => {
+      console.log('response', response);
+      let mounts = apiMaster.getUserMounts(response.access_token)
+      mounts
+        .catch(err => {
+          console.error('Error: cannot retrieve user mounts from Blizzard API', err);
+        })
+        .then(response => {
+          let operations = [];
+          response.map(obj => {
+            let mount = { insertOne: {
+              'id': obj['id'],
+              'name': obj['name'],
+              'link': obj['key']['href']
+            }};
+            operations.push(mount);
+          })
+          myMountsCollection.bulkWrite(operations, { ordered: false });
+        })
+      })
+      .then(result => {
+        let mounts = myMountsCollection.find().toArray((err, data) => {
+          if (err) {
+            console.error('Error: cannot retrieve mounts from MongoDB', err);
+          } else {
+            res.status(200).send(data);
+          }
+        })
+      })
+})
+
 MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => {
   if (err) {
     return console.log('Error: unable to connect to MongoDB', err);
@@ -117,6 +155,7 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (e
   console.log(`Database: ${dbName}`);
   db = client.db(dbName);
   mountsCollection = db.collection('mounts');
+  myMountsCollection = db.collection('mymounts');
   app.listen(port, () => {
     console.log(`Server listening on ${port}`);
   });

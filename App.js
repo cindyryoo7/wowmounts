@@ -33,7 +33,7 @@ const SignIn = ({ navigation }) => {
   const handlePress = () => {
     navigation.navigate('UserMounts');
   }
-  const uri = `https://us.battle.net/oauth/authorize?client_id=${config.client_id}&scope=wow.profile&redirect_uri=http://10.0.0.194/api/mymounts&response_type=code&response_type=code`;
+  const uri = `https://us.battle.net/oauth/authorize?client_id=${config.client_id}&scope=wow.profile&redirect_uri=http://10.0.0.194:5000/api/mymounts&response_type=code&response_type=code`;
 
   return (
     <View>

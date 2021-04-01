@@ -18,12 +18,40 @@ const getToken = async () => {
   }
 };
 
+const getUserToken = (authCode) => {
+  try {
+    return axios.post(`https://us.battle.net/oauth/token`,
+    {
+      scope: 'wow.profile',
+      redirect_uri: 'http://10.0.0.194/api/mymounts',
+      grant_type: 'authorization_code',
+      code: authCode
+    },
+    {
+      auth: {
+        username: config.client_id,
+        password: config.client_secret
+      }
+    })
+  } catch (err) {
+    console.log('Error: cannot get user token from Blizzard API', err);
+  }
+}
+
 const getMounts = async () => {
   try {
     let response = await axios.get(`https://us.api.blizzard.com/data/wow/mount/index?namespace=static-us&locale=en_US&access_token=${config.token}`)
     return response.data.mounts;
   } catch (err) {
     console.log('Error: cannot retrieve mounts from Blizzard API', err);
+  }
+}
+
+const getUserMounts = async (accessToken) => {
+  try {
+    let response = await axios.get(`https://us.api.blizzard.com/profile/user/wow/collections/mounts?namespace=profile-us&locale=en_US&access_token=${accessToken}`)
+  } catch (err) {
+    console.log('Error: cannot retrieve user mounts from Blizzard API', err);
   }
 }
 
@@ -49,5 +77,7 @@ const getMountInfo = async (mountID) => {
 module.exports = {
   getToken,
   getMounts,
-  getMountInfo
+  getMountInfo,
+  getUserToken,
+  getUserMounts
 }
