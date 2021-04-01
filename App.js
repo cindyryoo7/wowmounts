@@ -1,11 +1,12 @@
 import 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput, Button, FlatList } from 'react-native';
-import { WebView } from 'react-native-webview';
+import { StyleSheet, Text, View, SectionList, TouchableOpacity, Modal, Alert, Pressable, Image, SafeAreaView, TextInput, Button, FlatList, Linking } from 'react-native';
+import { WebView, onShouldStartLoadWithRequest } from 'react-native-webview';
 import { AlphabetList } from "react-native-section-alphabet-list";
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import config from './config.js';
 import axios from 'axios';
 import _ from 'lodash';
 
@@ -21,9 +22,36 @@ const Home = ({ navigation }) => {
         <Button
         title='Sign In to View My Mounts'
         onPress={ () => navigation.navigate('SignIn') }
-        // onPress={ () => navigation.navigate('UserMounts') }
         />
       </View>
+    </View>
+  )
+};
+
+const SignIn = ({ navigation }) => {
+
+  const handlePress = () => {
+    navigation.navigate('UserMounts');
+  }
+  const uri = `https://us.battle.net/oauth/authorize?client_id=${config.client_id}&scope=wow.profile&redirect_uri=http://10.0.0.194/api/mymounts&response_type=code&response_type=code`;
+
+  return (
+    <View>
+      {/* <Button
+      title='Sign In to View My Mounts'
+      onPress={ handlePress }
+      /> */}
+      <WebView
+        source={{ uri }}
+        onShouldStartLoadWithRequest={event => {
+          console.log(event);
+          if (event.url !== uri) {
+              Linking.openURL(event.url);
+              return false;
+          }
+          return true;
+        }}
+      />
     </View>
   )
 };
@@ -452,7 +480,7 @@ const Mounts = ({ navigation }) => {
   );
 };
 
-const SignIn = ({ navigation }) => {
+const UserMounts = ({ navigation }) => {
   const [mounts, setMounts] = useState([]);
   const [sectionedMounts, setSectionedMounts] = useState([]);
   const [showModal, setShowModal] = useState(false);
@@ -894,6 +922,11 @@ export default function App() {
         <Stack.Screen
           name='Mounts'
           component={ Mounts }
+          options={{ title: 'WoW, Mounts!' }}
+        />
+        <Stack.Screen
+          name='UserMounts'
+          component={ UserMounts }
           options={{ title: 'WoW, Mounts!' }}
         />
       </Stack.Navigator>
