@@ -345,15 +345,21 @@ export default function App() {
               <Text style={ styles.modalTextHeader }>Source:
                 <Text style={ styles.modalText }> { mountInfo.source }</Text>
               </Text>
-              { mountInfo.faction !== null
+              { mountInfo.faction !== null && typeof mountInfo.faction !== 'undefined'
                 ? <Text style={ styles.modalTextHeader }>Faction:
                     <Text style={ styles.modalText }> { mountInfo.faction }</Text>
                   </Text>
                 : null }
-              { mountInfo.requirements !== null &&  typeof mountInfo.requirements !== 'undefined'
-                ? <Text style={ styles.modalTextHeader }>Requirements:
-                    <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+              { mountInfo.requirements !== null && typeof mountInfo.requirements !== 'undefined'
+                ? mountInfo['requirements']['classes']
+                  ? <Text style={ styles.modalTextHeader }>Requirements:
+                    <Text style={ styles.modalText }> { mountInfo['requirements']['classes'][0]['name'] } Class</Text>
                   </Text>
+                  : mountInfo['requirements']['faction']
+                    ? <Text style={ styles.modalTextHeader }>Requirements:
+                        <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                      </Text>
+                    : null
                 : null }
               <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
               <Text></Text>
