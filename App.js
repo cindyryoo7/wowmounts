@@ -329,56 +329,102 @@ export default function App() {
                 }
                 </View>
         }
-        <Modal
-          animationType="slide"
-          transparent={ true }
-          visible={ showModal }
-          onRequestClose={ handleModalClose } >
-          <View style={ styles.centeredView } >
-            <View style={ styles.modalView } >
-              <Text style={ styles.modalTextHeader }>Name:
-                <Text style={ styles.modalText }> { mountInfo.name }</Text>
-              </Text>
-              <Text style={ styles.modalTextHeader }>Description:
-                <Text style={ styles.modalText }> { mountInfo.description }</Text>
-              </Text>
-              <Text style={ styles.modalTextHeader }>Source:
-                <Text style={ styles.modalText }> { mountInfo.source }</Text>
-              </Text>
-              { mountInfo.faction !== null && typeof mountInfo.faction !== 'undefined'
-                ? <Text style={ styles.modalTextHeader }>Faction:
-                    <Text style={ styles.modalText }> { mountInfo.faction }</Text>
+        {showCollection
+          ? <Modal
+              animationType="slide"
+              transparent={ true }
+              visible={ showModal }
+              onRequestClose={ handleModalClose } >
+              <View style={ styles.centeredView } >
+                <View style={ styles.modalView } >
+                  <Text style={ styles.modalTextHeader }>Name:
+                    <Text style={ styles.modalText }> { mountInfo.name }</Text>
                   </Text>
-                : null }
-              { mountInfo.requirements !== null && typeof mountInfo.requirements !== 'undefined'
-                ? mountInfo['requirements']['classes']
-                  ? <Text style={ styles.modalTextHeader }>Requirements:
-                    <Text style={ styles.modalText }> { mountInfo['requirements']['classes'][0]['name'] } Class</Text>
+                  <Text style={ styles.modalTextHeader }>Description:
+                    <Text style={ styles.modalText }> { mountInfo.description }</Text>
                   </Text>
-                  : mountInfo['requirements']['faction']
-                    ? <Text style={ styles.modalTextHeader }>Requirements:
-                        <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                  <Text style={ styles.modalTextHeader }>Source:
+                    <Text style={ styles.modalText }> { mountInfo.source }</Text>
+                  </Text>
+                  { mountInfo.faction !== null && typeof mountInfo.faction !== 'undefined'
+                    ? <Text style={ styles.modalTextHeader }>Faction:
+                        <Text style={ styles.modalText }> { mountInfo.faction }</Text>
                       </Text>
-                    : null
-                : null }
-              <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
-              <Text></Text>
-              <View style={ styles.fixToText }>
-                <Pressable
-                  style={ [styles.button, styles.buttonClose] }
-                  onPress={ handleModalClose } >
-                  <Text style={ styles.textStyle }>Close</Text>
-                </Pressable>
-                <Text> </Text>
-                <Pressable
-                  style={ styles.button }
-                  onPress={ (e) => handleAddToCollection(e, mountInfo) } >
-                  <Text style={ styles.textStyle }>Add to Collection +</Text>
-                </Pressable>
+                    : null }
+                  { mountInfo.requirements !== null && typeof mountInfo.requirements !== 'undefined'
+                    ? mountInfo['requirements']['classes']
+                      ? <Text style={ styles.modalTextHeader }>Requirements:
+                        <Text style={ styles.modalText }> { mountInfo['requirements']['classes'][0]['name'] } Class</Text>
+                      </Text>
+                      : mountInfo['requirements']['faction']
+                        ? <Text style={ styles.modalTextHeader }>Requirements:
+                            <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                          </Text>
+                        : null
+                    : null }
+                  <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
+                  <Text></Text>
+                  <View style={ styles.fixToText }>
+                    <Pressable
+                      style={ [styles.button, styles.buttonClose] }
+                      onPress={ handleModalClose } >
+                      <Text style={ styles.textStyle }>Close</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          : <Modal
+            animationType="slide"
+            transparent={ true }
+            visible={ showModal }
+            onRequestClose={ handleModalClose } >
+            <View style={ styles.centeredView } >
+              <View style={ styles.modalView } >
+                <Text style={ styles.modalTextHeader }>Name:
+                  <Text style={ styles.modalText }> { mountInfo.name }</Text>
+                </Text>
+                <Text style={ styles.modalTextHeader }>Description:
+                  <Text style={ styles.modalText }> { mountInfo.description }</Text>
+                </Text>
+                <Text style={ styles.modalTextHeader }>Source:
+                  <Text style={ styles.modalText }> { mountInfo.source }</Text>
+                </Text>
+                { mountInfo.faction !== null && typeof mountInfo.faction !== 'undefined'
+                  ? <Text style={ styles.modalTextHeader }>Faction:
+                      <Text style={ styles.modalText }> { mountInfo.faction }</Text>
+                    </Text>
+                  : null }
+                { mountInfo.requirements !== null && typeof mountInfo.requirements !== 'undefined'
+                  ? mountInfo['requirements']['classes']
+                    ? <Text style={ styles.modalTextHeader }>Requirements:
+                      <Text style={ styles.modalText }> { mountInfo['requirements']['classes'][0]['name'] } Class</Text>
+                    </Text>
+                    : mountInfo['requirements']['faction']
+                      ? <Text style={ styles.modalTextHeader }>Requirements:
+                          <Text style={ styles.modalText }> { mountInfo['requirements']['faction']['name'] } Faction</Text>
+                        </Text>
+                      : null
+                  : null }
+                <Image source={{ uri: mountInfo.imageUrl }} style={ styles.image }></Image>
+                <Text></Text>
+                <View style={ styles.fixToText }>
+                  <Pressable
+                    style={ [styles.button, styles.buttonClose] }
+                    onPress={ handleModalClose } >
+                    <Text style={ styles.textStyle }>Close</Text>
+                  </Pressable>
+                  <Text> </Text>
+                  <Pressable
+                    style={ styles.button }
+                    onPress={ (e) => handleAddToCollection(e, mountInfo) } >
+                    <Text style={ styles.textStyle }>Add to Collection +</Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
+          </Modal>
+        }
     </SafeAreaView>
   );
 }
