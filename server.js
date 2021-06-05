@@ -160,6 +160,3 @@ MongoClient.connect(url, { useNewUrlParser: true, useUnifiedTopology: true }, (e
     console.log(`Server listening on ${port}`);
   });
 });
-
-
-// https://us.api.blizzard.com/data/wow/media/creature-display/2404?namespace=static-9.0.5_37760-us&access_token=UShGPFs9J6GBbXmG5RIdpY8QN1afMiu4Ff
